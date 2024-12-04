@@ -6,7 +6,7 @@ En este documento se presenta la solución propuesta para la replicación de dat
 
 Este es el diagrama de arquitectura que nos permite entender como podemos realizar replicación de tablas desde SQL Server hacia BigQuery en GCP.
 
-![Diagrama de Arquitectura](/images/picture.jpg)
+![Diagrama de Arquitectura](/images/picture.png)
 
 
 Mira **Deployment** para conocer como desplegar el proyecto.
