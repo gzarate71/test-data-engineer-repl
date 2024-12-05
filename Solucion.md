@@ -105,12 +105,15 @@ CREATE TABLE sucursal2.Vuelos
 ```
 
 ## Solución 🔧
-* El diagrama 1 muestra la arquitectura para realizar la carga inicial de las tablas originales que se encuentran en SQL Server.
-    - Se debe ejecutar un job en el servicio de Dataproc Serverless, este job lanzará un ETL el cual está codificado en código PySpark y su nombre es [load_init.py](/dataproc/load_init.py)
-* Invita una cerveza 🍺 o un café ☕ a alguien del equipo. 
-* Da las gracias públicamente 🤓.
-* Dona con cripto a esta dirección: `0xf253fc233333078436d111175e5a76a649890000`
-* etc.
+1. El diagrama 1 muestra la arquitectura para realizar la carga inicial de las tablas originales que se encuentran en SQL Server.
+    - Se lanza un job en el servicio de Dataproc Serverless por cada una de las tablas en SQL Server. 
+    - Este job lanzará un ETL el cual está codificado en PySpark y su nombre es [load_init.py](/dataproc/load_init.py). 
+    - El código se conecta con SQL Server por medio de un conector JDBC, extrae la información de una tabla, se almacena en un dataframe para posteriormente guardarla en BigQuery, utilizando otro conector.
+2. Se habilita el CDC en cada una de las tablas de SQL Server que se van a replicar hacia BigQuery, como se indica en el [paso 1](/#pre-reuisitos) de la sección de Pre-requisitos.
+3. El diagrama 2 muestra la arquitectura para realizar la replicación de cada una de las tablas que se encuentran en SQL Server hacia BigQuery.
+    - Se calendariza la ejecución de cada uno de los jobs en el servicio de Dataproc Serverless por cada una de las tablas en SQL Server que estamos replicando con CDC.
+    - Estos jobs calendarizados lanzan un ETL el cual está codificado en PySpark y su nombre es [replicate_cdc.py](/dataproc/replicate_cdc.py).
+    - El código se conecta con SQL Server por medio de un conector JDBC, extrae la información de las tablas que tienen el prefijo "cdc.dbo_", se almacena en un dataframe, con el cual se identificarán los cambios que existieron en la tabla, para posteriormente reflejar los cambios en BigQuery, utilizando otro conector.
 
 ## Autor ✒️
 
