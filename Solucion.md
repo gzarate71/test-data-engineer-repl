@@ -109,12 +109,12 @@ CREATE TABLE sucursal2.Vuelos
     - Se lanza un job en el servicio de Dataproc Serverless por cada una de las tablas en SQL Server. 
     - Este job lanzará un ETL el cual está codificado en PySpark y su nombre es [load_init.py](/dataproc/load_init.py). 
     - El código se conecta con SQL Server por medio de un conector JDBC, extrae la información de una tabla, se almacena en un dataframe para posteriormente guardarla en BigQuery, utilizando otro conector.
-2. Se habilita el CDC en cada una de las tablas de SQL Server que se van a replicar hacia BigQuery, como se indica en el [paso 1](/###pre-reuisitos) de la sección de Pre-requisitos.
+2. Se habilita el CDC en cada una de las tablas de SQL Server que se van a replicar hacia BigQuery, como se indica en el [paso 1](/Solucion.md#pre-requisitos-) de la sección de Pre-requisitos.
 3. El diagrama 2 muestra la arquitectura para realizar la replicación de cada una de las tablas que se encuentran en SQL Server hacia BigQuery.
     - Se calendariza cada 5 minutos la ejecución de los jobs en el servicio de Dataproc Serverless por cada una de las tablas en SQL Server que estamos replicando con CDC.
     - Estos jobs calendarizados lanzan un ETL el cual está codificado en PySpark y su nombre es [replicate_cdc.py](/dataproc/replicate_cdc.py).
     - El código se conecta con SQL Server por medio de un conector JDBC, extrae la información de las tablas que tienen el prefijo "cdc.dbo_", se almacena en un dataframe, con el cual se identificarán los cambios que existieron en la tabla, para posteriormente reflejar los cambios en BigQuery, utilizando otro conector.
-    - La calendarización de estos jobs se realiza por medio del servicio de Cloud Composer (Airflow), para llevar a cabo la orquestación se crea un DAG llamado "run_dataproc_job", el cual está codificado en Apache Airflow, que se encuentra en este archivo [dag_dataproc_job,py](/composer/dag_dataproc_job_py).
+    - La calendarización de estos jobs se realiza por medio del servicio de Cloud Composer (Airflow), para llevar a cabo la orquestación se crea un DAG llamado "run_dataproc_job", el cual está codificado en Apache Airflow, que se encuentra en este archivo [dag_dataproc_job,py](/composer/dag_dataproc_job.py).
 
 ## Autor ✒️
 
