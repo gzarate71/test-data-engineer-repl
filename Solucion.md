@@ -6,99 +6,113 @@ En este documento se presenta la solución propuesta para la replicación de dat
 
 Este es el diagrama de arquitectura que nos permite entender como podemos realizar replicación de tablas desde SQL Server hacia BigQuery en GCP.
 
-![Diagrama de Arquitectura](/images/picture.png)
+![Arquitectura Carga Inicial](/images/Arquitectura_Inicial.jpg)
+_Diagrama 1. Arquitectura de la carga inicial de datos_      
 
 
-Mira **Deployment** para conocer como desplegar el proyecto.
+![Arquitectura Carga Inicial](/images/Arquitectura_Replicacion.jpg)
+_Diagrama 2. Arquitectura de la replicación de datos_       
 
+
+### Supuestos 📋
+En esta solución propuesta se asume que existe comunicación entre la nube de GCP y los servidores de SQL Server, por lo cual los scripts y códigos mostrados en este repositorio no contemplan alguna configuración de redes.
 
 ### Pre-requisitos 📋
 
-_Que cosas necesitas para instalar el software y como instalarlas_
-
+1. Habilitar el CDC en SQL Server tanto en la Base de Datos como en las tablas:
 ```
-Da un ejemplo
+-- enable CDC on the database
+EXEC sys.sp_cdc_enable_db;
+-- enable CDC on the CatLineasAereas table
+EXEC sys.sp_cdc_enable_table
+  @source_schema = N'dbo',
+  @source_name   = N'CatLineasAereas',
+  @role_name     = NULL;
+-- enable CDC on the Pasajeros table
+EXEC sys.sp_cdc_enable_table
+  @source_schema = N'dbo',
+  @source_name   = N'Pasajeros',
+  @role_name     = NULL;
+-- enable CDC on the Vuelos table
+EXEC sys.sp_cdc_enable_table
+  @source_schema = N'dbo',
+  @source_name   = N'Vuelos',
+  @role_name     = NULL;
 ```
-
-### Instalación 🔧
-
-_Una serie de ejemplos paso a paso que te dice lo que debes ejecutar para tener un entorno de desarrollo ejecutandose_
-
-_Dí cómo será ese paso_
-
+   
+2. Crear los datasets y las tablas necesarias en BigQuery
+Creación de datasets
 ```
-Da un ejemplo
-```
-
-_Y repite_
-
-```
-hasta finalizar
-```
-
-_Finaliza con un ejemplo de cómo obtener datos del sistema o como usarlos para una pequeña demo_
-
-## Ejecutando las pruebas ⚙️
-
-_Explica como ejecutar las pruebas automatizadas para este sistema_
-
-### Analice las pruebas end-to-end 🔩
-
-_Explica que verifican estas pruebas y por qué_
-
-```
-Da un ejemplo
-```
-
-### Y las pruebas de estilo de codificación ⌨️
-
-_Explica que verifican estas pruebas y por qué_
-
-```
-Da un ejemplo
+-- create dataset central
+CREATE SCHEMA central
+OPTIONS(
+  location="us"
+  );
+-- create dataset sucursal1
+CREATE SCHEMA sucursal1
+OPTIONS(
+  location="us"
+  );
+-- create dataset sucursal2
+CREATE SCHEMA sucursal2
+OPTIONS(
+  location="us"
+  );
 ```
 
-## Despliegue 📦
+Creación de tablas
+```
+-- create table CatLineasAereas
+CREATE TABLE central.CatLineasAereas
+(
+  code STRING,
+  linea_aerea STRING
+);
+-- create table sucursal1.Pasajeros 
+CREATE TABLE sucursal1.Pasajeros
+(
+  id_pasajero INT64,
+  pasajero STRING,
+  edad INT64
+);
+-- create table sucursal1.Vuelos
+CREATE TABLE sucursal1.Vuelos
+(
+  cve_la STRING,
+  viaje DATE,
+  clase STRING,
+  precio NUMERIC,
+  Ruta STRING,
+  cve_cliente INT64
+);
+-- create table sucursal2.Pasajeros 
+CREATE TABLE sucursal2.Pasajeros
+(
+  id_pasajero INT64,
+  pasajero STRING,
+  edad INT64
+);
+-- create table sucursal2.Vuelos
+CREATE TABLE sucursal2.Vuelos
+(
+  cve_la STRING,
+  viaje DATE,
+  clase STRING,
+  precio NUMERIC,
+  Ruta STRING,
+  cve_cliente INT64
+);
+```
 
-_Agrega notas adicionales sobre como hacer deploy_
-
-## Construido con 🛠️
-
-_Menciona las herramientas que utilizaste para crear tu proyecto_
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - El framework web usado
-* [Maven](https://maven.apache.org/) - Manejador de dependencias
-* [ROME](https://rometools.github.io/rome/) - Usado para generar RSS
-
-## Contribuyendo 🖇️
-
-Por favor lee el [CONTRIBUTING.md](https://gist.github.com/villanuevand/xxxxxx) para detalles de nuestro código de conducta, y el proceso para enviarnos pull requests.
-
-## Wiki 📖
-
-Puedes encontrar mucho más de cómo utilizar este proyecto en nuestra [Wiki](https://github.com/tu/proyecto/wiki)
-
-## Versionado 📌
-
-Usamos [SemVer](http://semver.org/) para el versionado. Para todas las versiones disponibles, mira los [tags en este repositorio](https://github.com/tu/proyecto/tags).
-
-## Autores ✒️
-
-_Menciona a todos aquellos que ayudaron a levantar el proyecto desde sus inicios_
-
-* **Andrés Villanueva** - *Trabajo Inicial* - [villanuevand](https://github.com/villanuevand)
-* **Fulanito Detal** - *Documentación* - [fulanitodetal](#fulanito-de-tal)
-
-También puedes mirar la lista de todos los [contribuyentes](https://github.com/your/project/contributors) quíenes han participado en este proyecto. 
-
-## Licencia 📄
-
-Este proyecto está bajo la Licencia (Tu Licencia) - mira el archivo [LICENSE.md](LICENSE.md) para detalles
-
-## Expresiones de Gratitud 🎁
-
-* Comenta a otros sobre este proyecto 📢
+## Solución 🔧
+* El diagrama 1 muestra la arquitectura para realizar la carga inicial de las tablas originales que se encuentran en SQL Server.
+    - Se debe ejecutar un job en el servicio de Dataproc Serverless, este job lanzará un ETL el cual está codificado en código PySpark y su nombre es [load_init.py](/dataproc/load_init.py)
 * Invita una cerveza 🍺 o un café ☕ a alguien del equipo. 
 * Da las gracias públicamente 🤓.
 * Dona con cripto a esta dirección: `0xf253fc233333078436d111175e5a76a649890000`
 * etc.
+
+## Autor ✒️
+
+* **Genaro Zárate** - *Documentación* - [gzarate71](https://github.com/gzarate71)
+
