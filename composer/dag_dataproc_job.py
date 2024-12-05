@@ -26,7 +26,7 @@ PHS_CLUSTER = "{{ var.value.phs_cluster }}"
 METASTORE_CLUSTER = "{{var.value.metastore_cluster}}"
 DOCKER_IMAGE = "{{var.value.image_name}}"
 
-PYTHON_FILE_LOCATION = "gs://{{var.value.bucket_name }}/spark-job.py"
+PYTHON_FILE_LOCATION = "gs://{{var.value.bucket_name }}/replicate_cdc.py"
 # for e.g.  "gs//my-bucket/replicate_cdc.py"
 # Start a single node Dataproc Cluster for viewing Persistent History of Spark jobs
 PHS_CLUSTER_PATH = "projects/{{ var.value.project_id }}/regions/{{ var.value.region_name}}/clusters/{{ var.value.phs_cluster }}"
