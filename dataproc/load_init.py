@@ -3,6 +3,8 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder \
     .appName("sql-server-cdc-with-pyspark") \
     .config("spark.jars.packages", "com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8") \
+    .config("spark.jars.packages", "com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.21.1") \
+    .config("spark.sql.repl.eagerEval.enabled", True) \
     .getOrCreate()
 # secrets included for readability; normally they would be in KeyVault, etc.
 SRC_USER = "XXXXXX"
@@ -27,18 +29,22 @@ df = spark.read \
         .option("hostNameInCertificate", "*.database.windows.net") \
         .load()
 
-sparkbq = SparkSession \
-  .builder \
-  .appName('spark-bigquery-demo') \
-  .getOrCreate()
-
 # Use the Cloud Storage bucket for temporary BigQuery export data used
 # by the connector.
 # TODO Change the bucket name to your bucket name
 bucket = "YOUR_BUCKET"
 sparkbq.conf.set('temporaryGcsBucket', bucket)
 
-# Saving the data to BigQuery
-df.write.format('bigquery') \
-  .option('table', 'wordcount_dataset.wordcount_output') \
+# Update to your BigQuery dataset name you created
+bq_dataset = 'your_dataset_name'
+
+# Enter BigQuery table name you want to create or overwite. 
+# If the table does not exist it will be created when you run the write function
+bq_table = 'your_dataset_name'
+
+df.write \
+  .format("bigquery") \
+  .option("table","{}.{}".format(bq_dataset, bq_table)) \
+  .option("temporaryGcsBucket", bucket) \
+  .mode('overwrite') \
   .save()
