@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-# create a spark session with mssql
+# create a spark session with mssql and bigquery
 spark = SparkSession.builder \
     .appName("sql-server-cdc-with-pyspark") \
     .config("spark.jars.packages", "com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8") \
@@ -40,7 +40,7 @@ bq_dataset = 'your_dataset_name'
 
 # Enter BigQuery table name you want to create or overwite. 
 # If the table does not exist it will be created when you run the write function
-bq_table = 'your_dataset_name'
+bq_table = 'your_table_name'
 
 df.write \
   .format("bigquery") \
